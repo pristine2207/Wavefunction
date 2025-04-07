@@ -1,48 +1,178 @@
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
+
+# Predictions
+y_pred_lr = lr_model.predict(X_test)
+
+# Evaluate Model
+mse_lr = mean_squared_error(y_test, y_pred_lr)
+print(f"Linear Regression MSE: {mse_lr:.5f}")
+
 from sklearn.tree import DecisionTreeRegressor
+
+dt_model = DecisionTreeRegressor(max_depth=10)
+dt_model.fit(X_train, y_train)
+
+# Predictions
+y_pred_dt = dt_model.predict(X_test)
+
+# Evaluate Model
+mse_dt = mean_squared_error(y_test, y_pred_dt)
+print(f"Decision Tree MSE: {mse_dt:.5f}")
+
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# Load dataset
-df = pd.read_csv("materials_data.csv")
-X = df[["Band Gap", "Energy per Atom", "Formation Energy"]]
-y = df["Band Gap"]
+rf_model = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42)
+rf_model.fit(X_train, y_train)
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Predictions
+y_pred_rf = rf_model.predict(X_test)
 
-# Normalize features
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# Evaluate Model
+mse_rf = mean_squared_error(y_test, y_pred_rf)
+print(f"Random Forest MSE: {mse_rf:.5f}")
 
-# Train different models
+from sklearn.neural_network import MLPRegressor
 
+nn_model = MLPRegressor(hidden_layer_sizes=(64, 32, 16), activation='relu', max_iter=500, random_state=42)
+nn_model.fit(X_train, y_train)
 
+# Predictions
+y_pred_nn = nn_model.predict(X_test)
 
-models = {
-    
-    "Linear Regression": LinearRegression(),
-    "Decision Tree": DecisionTreeRegressor(),
-"Random Forest": RandomForestRegressor(n_estimators=100, 
-    random_state=42),
-    "XGBoost": XGBRegressor(n_estimators=100, 
-    learning_rate=0.1, random_state=42)
+# Evaluate Model
+mse_nn = mean_squared_error(y_test, y_pred_nn)
+print(f"Neural Network MSE: {mse_nn:.5f}")
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
+
+# Define hyperparameter grid
+rf_params = {
+    "n_estimators": [50, 100, 200],  # Number of trees
+    "max_depth": [10, 20, None],  # Depth of tree
+    "min_samples_split": [2, 5, 10],  # Minimum samples to split a node
 }
 
-# Train and evaluate each model
-for name, model in models.items():
-model.fit(X_train_scaled, y_train)
-y_pred = model.predict(X_test_scaled)
-print(f"\n�� {name} Performance:")
-print(f"-MAE:{mean_absolute_error(y_test, 
-y_pred)f}")
-print(f"-RMSE:{np.sqrt(mean_squared_error
-(y_t,y_p)):.4f}")
-print(f"-R² Score:{r2_score(y_test, y_pred):.
-4f}")
+# Initialize model
+rf = RandomForestRegressor(random_state=42)
+
+# Grid Search
+grid_search_rf = GridSearchCV(rf, rf_params, cv=3, scoring="neg_mean_squared_error", n_jobs=-1, verbose=2)
+grid_search_rf.fit(X_train, y_train)
+
+# Best Parameters
+print("Best Parameters for Random Forest:", grid_search_rf.best_params_)
+
+# Train with best parameters
+best_rf = grid_search_rf.best_estimator_
+
+sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import RandomizedSearchCV
+
+# Define hyperparameter grid
+dt_params = {
+    "max_depth": [5, 10, 20, None],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4]
+}from
+
+# Initialize model
+dt = DecisionTreeRegressor(random_state=42)
+
+# Randomized Search
+random_search_dt = RandomizedSearchCV(dt, dt_params, n_iter=10, cv=3, scoring="neg_mean_squared_error", n_jobs=-1, random_state=42, verbose=2)
+random_search_dt.fit(X_train, y_train)
+
+# Best Parameters
+print("Best Parameters for Decision Tree:", random_search_dt.best_params_)
+
+# Train with best parameters
+best_dt = random_search_dt.best_estimator_
+
+from sklearn.neural_network import MLPRegressor
+
+# Define hyperparameter grid
+nn_params = {
+    "hidden_layer_sizes": [(64,), (128, 64), (128, 64, 32)],  # Layer sizes
+    "activation": ["relu", "tanh"],  # Activation functions
+    "alpha": [0.0001, 0.001, 0.01],  # Regularization term
+    "learning_rate": ["constant", "adaptive"],  # Learning rate type
+}
+
+# Initialize model
+nn = MLPRegressor(max_iter=500, random_state=42)
+
+# Grid Search
+grid_search_nn = GridSearchCV(nn, nn_params, cv=3, scoring="neg_mean_squared_error", n_jobs=-1, verbose=2)
+grid_search_nn.fit(X_train, y_train)
+
+# Best Parameters
+print("Best Parameters for Neural Network:", grid_search_nn.best_params_)
+
+# Train with best parameters
+best_nn = grid_search_nn.best_estimator_
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# Define the Neural Network
+model = keras.Sequential([
+    layers.Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(32, activation='relu'),
+    layers.Dense(1)  # Output layer
+])
+
+# Compile Model
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+
+# Train the Model
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_split=0.2, verbose=1)
+
+# Evaluate Model
+mse, mae = model.evaluate(X_test, y_test)
+print(f"TensorFlow Model - MSE: {mse:.5f}, MAE: {mae:.5f}")
+
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from sklearn.ensemble import StackingRegressor
+
+xgb = XGBRegressor(n_estimators=200, learning_rate=0.05)
+lgb = LGBMRegressor(n_estimators=200, learning_rate=0.05)
+
+stacked_model = StackingRegressor(estimators=[('xgb', xgb), ('lgb', lgb)])
+stacked_model.fit(X_train, y_train)
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
+
+model = Sequential([
+    Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
+    BatchNormalization(),
+    Dropout(0.2),
+    Dense(64, activation='relu'),
+    Dense(32, activation='relu'),
+    Dense(1)  # Output layer for regression
+])
+
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test))
+
+from sklearn.model_selection import GridSearchCV
+
+params = {
+    'n_estimators': [100, 200, 300],
+    'learning_rate': [0.01, 0.05, 0.1],
+    'max_depth': [3, 5, 7]
+}
+
+grid = GridSearchCV(XGBRegressor(), param_grid=params, cv=3, scoring='neg_mean_absolute_error')
+grid.fit(X_train, y_train)
+
+print("Best Parameters:", grid.best_params_)
