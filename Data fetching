@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+
+# List of materials
+materials = ["Copper", "Silicon", "Graphene", "Iron", "Aluminum"]
+
+# Define a grid (e.g., 1D position grid for simplicity)
+x = np.linspace(0, 10, 100)
+
+# Dummy wavefunction generator (normalized Gaussian + noise)
+def generate_wavefunction(material):
+    center = np.random.uniform(3, 7)
+    width = np.random.uniform(0.5, 2.0)
+    amplitude = np.random.uniform(0.8, 1.2)
+    psi = amplitude * np.exp(-(x - center)**2 / (2 * width**2))
+    psi += np.random.normal(0, 0.01, size=x.shape)  # small noise
+    return psi / np.linalg.norm(psi)
+
+# Create dataframe
+data = []
+
+for material in materials:
+    for sample in range(50):  # 50 samples per material
+        psi = generate_wavefunction(material)
+        row = [material] + psi.tolist()
+        data.append(row)
+
+columns = ['Material'] + [f'Ψ(x={round(val, 2)})' for val in x]
+df = pd.DataFrame(data, columns=columns)
+
+# Save to CSV
+df.to_csv('dummy_wavefunction_data.csv', index=False)
+print("Dummy wavefunction data generated and saved to 'dummy_wavefunction_data.csv'")
