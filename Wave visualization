@@ -1,0 +1,38 @@
+# Plotting the graphs side by side
+fig, axes = plt.subplots(1, 5, figsize=(8, 6))  # Adjusting the figure size for 5 plots side by side
+
+for idx, (ivector, X_range) in enumerate(ivectors_and_ranges):
+    ax = axes[idx]
+
+    # Define X values for the current subplot
+    X = np.linspace(X_range[0], X_range[1], 100)
+
+    # Plot E for different h combinations
+    for h in h_combinations:
+        G = calculate_G(h)
+        E = c * np.linalg.norm(X[:, np.newaxis] * ivector + G, axis=1)**2
+        ax.plot(X, E, label=f'h={h.tolist()}')
+
+    # Adding labels and title
+    ax.set_xlabel('X')
+    ax.set_ylabel('E')
+    ax.set_title(f'i-vector {ivector.tolist()}')
+
+    ax.set_ylim(0, 5)
+
+    # Customize x-axis with custom labels
+    x_ticks = sorted(custom_x_labels[X_range].keys())
+    x_labels = [custom_x_labels[X_range][tick] for tick in x_ticks]
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_labels)
+
+    # Customize y-axis to show 1c, 2c, 3c, ...
+    y_ticks = np.arange(1, 6, 1)
+    y_labels = [f'{i}c' for i in y_ticks]
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels(y_labels)
+
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
