@@ -1,0 +1,81 @@
+import pandas as pd
+import numpy as np
+
+# Number of samples
+num_samples = 10000
+
+# Generate dummy data
+np.random.seed(42)
+data = {
+    "material_id": [f"mp-{np.random.randint(100, 999)}" for _ in range(num_samples)],
+    "band_gap": np.random.uniform(0, 5, num_samples),  # eV
+    "density": np.random.uniform(1, 10, num_samples),  # g/cm³
+    "volume": np.random.uniform(5, 100, num_samples),  # Å³
+    "energy_per_atom": np.random.uniform(-10, 0, num_samples),  # eV/atom
+    "formation_energy_per_atom": np.random.uniform(-2, 2, num_samples),  # eV
+    "efermi": np.random.uniform(0, 10, num_samples),  # eV
+    "elasticity": np.random.choice([None, "High", "Medium", "Low"], num_samples),
+    "DOS": np.random.uniform(0.001, 0.1, num_samples),  # Density of States
+    "Wave_Function": np.random.uniform(0.001, 0.01, num_samples)  # Wave function (Ψ)
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Save as CSV
+df.to_csv("wavefunction_dummy_data.csv", index=False)
+
+# Display first few rows
+print(df.head())
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Load the dataset
+df = pd.read_csv("wavefunction_dummy_data.csv")
+
+# Drop non-numeric columns (like material_id and elasticity)
+df = df.drop(columns=["material_id", "elasticity"])
+
+# Split features (X) and target (y)
+X = df.drop(columns=["Wave_Function"])  # Input features
+y = df["Wave_Function"]  # Target variable
+
+# Split data into Training (80%) and Testing (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Normalize the data (important for ML models)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import torch
+
+# Load dataset
+df = pd.read_csv("wavefunction_dummy_data.csv")
+
+# Drop non-numeric columns
+df = df.drop(columns=["material_id", "elasticity"])
+
+# Split features (X) and target (y)
+X = df.drop(columns=["Wave_Function"]).values
+y = df["Wave_Function"].values
+
+# Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Normalize data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Convert to PyTorch Tensors
+X_train_torch = torch.tensor(X_train, dtype=torch.float32)
+y_train_torch = torch.tensor(y_train, dtype=torch.float32).view(-1, 1)
+X_test_torch = torch.tensor(X_test, dtype=torch.float32)
+y_test_torch = torch.tensor(y_test, dtype=torch.float32).view(-1, 1)
